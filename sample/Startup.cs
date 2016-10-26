@@ -16,7 +16,7 @@ namespace Sample
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
-            loggerfactory.AddConsole(LogLevel.Debug);
+            loggerfactory.AddConsole();
 
             var logger = loggerfactory.CreateLogger("Requests");
             

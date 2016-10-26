@@ -2,37 +2,23 @@
 using System.Net;
 using System.Net.Http;
 using HealthCheck;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Hosting
+namespace HealthCheck
 {
     public class HealthCheckBuilder
     {
-        IHealthCheckService _service;
-        
-        public HealthCheckBuilder(IHealthCheckService checkupService)
-        {
-            _service = checkupService;
-        }
+        public Dictionary<string, Func<bool>> Checks { get; private set; }
 
-        public HealthCheckBuilder AddPassingCheck()
+        public HealthCheckBuilder()
         {
-            _service.Checks.Add(() => {
-                return true;
-            });
-            return this;
-        }
-
-        public HealthCheckBuilder AddFailingCheck()
-        {
-            _service.Checks.Add(() => {
-                return false;
-            });
-            return this;
+            Checks = new Dictionary<string, Func<bool>>();
         }
 
         public HealthCheckBuilder AddUrlCheck(string url)
         {
-            _service.Checks.Add(() =>{
+            Checks.Add($"UrlCheck ({url})", () => {
                 var httpClient = new HttpClient();
                 var response = httpClient.GetAsync(url).Result;
                 return response.StatusCode == HttpStatusCode.OK;
@@ -40,19 +26,27 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
+        public HealthCheckBuilder AddUrlCheck(string url, Func<HttpResponseMessage, bool> checkFunc)
+        {
+            Checks.Add($"UrlCheck ({url})", () =>{
+                var httpClient = new HttpClient();
+                var response = httpClient.GetAsync(url).Result;
+                return checkFunc.Invoke(response);
+            });
+            return this;
+        }
+
         public HealthCheckBuilder AddSqlCheck(string connectionString)
         {
-            _service.Checks.Add(()=>{
+            Checks.Add($"SQL Check ({connectionString})", ()=>{
                 return true;
             });
             return this;
         }
 
-        public HealthCheckBuilder AddCustomCheck(Func<bool> customFunction)
+        public HealthCheckBuilder AddCheck(string name, Func<bool> check)
         {
-            _service.Checks.Add(() => {
-                return customFunction.Invoke();
-            });
+            Checks.Add(name, check);
             return this;
         }
     }

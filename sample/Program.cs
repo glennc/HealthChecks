@@ -14,9 +14,17 @@ namespace Sample
                             .UseUrls("http://+:5000")
                             .UseHealthChecks(8080, checks =>
                             {
-                                checks.AddUrlCheck("http://google.com")
-                                      .AddCustomCheck(CheckAppReady)
-                                      .AddFailingCheck();
+                                checks.AddUrlCheck("http://gooadfgasdasle.com", (response) =>
+                                {
+                                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                                    {
+                                        //TODO: Some other check because I have a transparent proxy that is in-between me and the site
+                                        //so I always get 200. For example.
+                                        return true;
+                                    }
+                                    return false;
+                                })
+                                .AddCheck("CheckAppReady", CheckAppReady);
                             })
                             .Build();
 
@@ -26,7 +34,6 @@ namespace Sample
             Console.WriteLine(healthy ? "Application is Healthy" : "Application is not healthy");
 
             host.RunWhenHealthy();
-            //host.Run();
         }
 
         public static bool CheckAppReady()
