@@ -7,6 +7,5 @@ namespace HealthCheck
     public interface IHealthCheckService
     {
         Task<bool> CheckHealthAsync();
-        bool CheckHealth();
     }
 }

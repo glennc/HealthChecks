@@ -23,7 +23,7 @@ namespace HealthCheck
             var connInfo = context.Features.Get<IHttpConnectionFeature>();
             if(connInfo.LocalPort == _healthCheckPort)
             {
-                var healthy = _checkupService.CheckHealth();
+                var healthy = await _checkupService.CheckHealthAsync();
                 if(healthy)
                 {
                     await context.Response.WriteAsync("HealthCheck: OK");
